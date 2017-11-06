@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 using Engine;
 
@@ -16,21 +17,24 @@ namespace LittleAdventureGame
     {
         private Player player;
         private Monster currentMonster;
+        private const string PLAYER_DATA_FILE_NAME = "PlayerData.xml";
 
         public LittleAdventure()
         {
             InitializeComponent();
 
-            player = new Player(10, 10, 20, 0);
-            MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
-            player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
+            if (File.Exists(PLAYER_DATA_FILE_NAME))
+            {
+                player = Player.CreatePlayerFromXmlString(File.ReadAllText(PLAYER_DATA_FILE_NAME));
+            }
+            else
+            {
+                player = Player.CreateDefaultPlayer();
+            }
+
+            MoveTo(player.CurrentLocation);
 
             UpdatePlayerStats();
-
-            lblHitPoints.Text = player.CurrentHitPoints.ToString();
-            lblGold.Text = player.Gold.ToString();
-            lblExperience.Text = player.ExperiencePoints.ToString();
-            lblLevel.Text = player.Level.ToString();
         }
 
         private void btnNorth_Click(object sender, EventArgs e)
@@ -518,6 +522,11 @@ namespace LittleAdventureGame
         {
             rtbMessages.SelectionStart = rtbMessages.Text.Length;
             rtbMessages.ScrollToCaret();
+        }
+
+        private void LittleAdventure_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(PLAYER_DATA_FILE_NAME, player.ToXmlString());
         }
     }
 }
