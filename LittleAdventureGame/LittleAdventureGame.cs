@@ -129,7 +129,7 @@ namespace LittleAdventureGame
                             rtbMessages.Text += Environment.NewLine;
                             ScrollToBottomOfMessages();
 
-                            player.ExperiencePoints += newLocation.QuestAvailableHere.RewardExperiencePoints;
+                            player.AddExperiencePoints(newLocation.QuestAvailableHere.RewardExperiencePoints);
                             player.Gold += newLocation.QuestAvailableHere.RewardGold;
 
                             // Добавить награду в инвентарь игрока
@@ -294,11 +294,20 @@ namespace LittleAdventureGame
             }
             else
             {
+                cboWeapons.SelectedIndexChanged -= cboWeapons_SelectedIndexChanged;
                 cboWeapons.DataSource = weapons;
+                cboWeapons.SelectedIndexChanged += cboWeapons_SelectedIndexChanged;
                 cboWeapons.DisplayMember = "Название";
                 cboWeapons.ValueMember = "ID";
 
-                cboWeapons.SelectedIndex = 0;
+                if (player.CurrentWeapon != null)
+                {
+                    cboWeapons.SelectedItem = player.CurrentWeapon;
+                }
+                else
+                {
+                    cboWeapons.SelectedIndex = 0;
+                }
             }
         }
 
@@ -360,7 +369,7 @@ namespace LittleAdventureGame
                 ScrollToBottomOfMessages();
 
                 // Выдать очки опыта за победу
-                player.ExperiencePoints += currentMonster.RewardExperiencePoints;
+                player.AddExperiencePoints(currentMonster.RewardExperiencePoints);
                 rtbMessages.Text += "Вы получили " + currentMonster.RewardExperiencePoints.ToString() +
                                     " очка(ов) опыта" + Environment.NewLine;
                 ScrollToBottomOfMessages();
@@ -527,6 +536,10 @@ namespace LittleAdventureGame
         private void LittleAdventure_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText(PLAYER_DATA_FILE_NAME, player.ToXmlString());
+        }
+        private void cboWeapons_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            player.CurrentWeapon = (Weapon)cboWeapons.SelectedItem;
         }
     }
 }
